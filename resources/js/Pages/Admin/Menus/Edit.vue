@@ -118,23 +118,17 @@ const submitItem = () => {
     });
 };
 
-// ─── Delete (axios, no reload) ────────────────────────────────────
-const deleteItem = async (id) => {
+// ─── Delete (Inertia router, handles redirects) ───────────────────
+const deleteItem = (id) => {
     if (!confirm('Hapus menu item ini?')) return;
 
-    try {
-        await axios.delete(route('menu-items.destroy', id));
-        // Remove from local state
-        rootItems.value = rootItems.value.filter(item => {
-            if (item.id === id) return false;
-            if (item.children) {
-                item.children = item.children.filter(c => c.id !== id);
-            }
-            return true;
-        });
-    } catch (e) {
-        console.error('Delete failed', e);
-    }
+    router.delete(route('menu-items.destroy', id), {
+        onSuccess: () => {
+            // Re-build tree from updated props.menu.items
+            rootItems.value = buildTree(props.menu.items);
+        },
+        preserveScroll: true
+    });
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────
