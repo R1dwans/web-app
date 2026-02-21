@@ -19,13 +19,37 @@ use Inertia\Inertia;
 use App\Models\Slider;
 use App\Models\Article;
 use App\Models\Event;
+use App\Models\Setting;
+use App\Models\Page;
 
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\PageBuilderDataController;
 
 Route::get('/', function () {
+    $homepageDisplay = Setting::get('homepage_display', 'default');
+    $homepagePageId = Setting::get('homepage_page_id');
+
+    // If a static page is configured as homepage
+    if ($homepageDisplay === 'page' && $homepagePageId) {
+        $page = Page::where('id', $homepagePageId)->where('is_published', true)->first();
+        if ($page) {
+            // Hydrate dynamic blocks
+            $dynamicData = [];
+            if ($page->editor_mode === 'builder' && is_array($page->blocks)) {
+                $dynamicData = PageController::hydrateDynamicBlocksStatic($page->blocks);
+            }
+            return Inertia::render('Public/Page', [
+                'page' => $page,
+                'isHomepage' => true,
+                'dynamicData' => $dynamicData,
+            ]);
+        }
+    }
+
+    // Default welcome page
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
@@ -36,6 +60,9 @@ Route::get('/', function () {
         'upcomingEvents' => Event::where('is_published', true)->where('start_date', '>=', now())->orderBy('start_date')->take(3)->get(),
     ]);
 })->name('welcome');
+
+Route::post('/api/page-builder/data', [PageBuilderDataController::class, 'fetch'])->name('page-builder.data');
+Route::get('/api/page-builder/categories', [PageBuilderDataController::class, 'categories'])->name('page-builder.categories');
 
 Route::get('/search', [SearchController::class, 'index'])->name('public.search');
 
@@ -74,6 +101,8 @@ Route::middleware('auth')->group(function () {
     Route::group(['middleware' => ['role:admin|penulis']], function () {
         Route::post('/articles/upload-image', [ArticleController::class, 'uploadImage'])->name('articles.upload-image');
         Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+        Route::post('/media/upload', [MediaController::class, 'upload'])->name('media.upload');
+        Route::delete('/media', [MediaController::class, 'destroy'])->name('media.destroy');
         Route::resource('articles', ArticleController::class);
         Route::resource('events', EventController::class);
         Route::resource('facilities', FacilityController::class);
@@ -83,7 +112,7 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // IMPORTANT: This catch-all route MUST be the very last route
 Route::get('/{page:slug}', [PageController::class, 'showPublic'])->name('public.pages.show');

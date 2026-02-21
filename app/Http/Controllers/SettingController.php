@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redirect;
@@ -14,9 +15,14 @@ class SettingController extends Controller
     public function index()
     {
         $settings = Setting::all()->groupBy('group');
+        $pages = Page::where('is_published', true)
+            ->select('id', 'title', 'slug', 'editor_mode')
+            ->orderBy('title')
+            ->get();
 
         return Inertia::render('Admin/Settings/Index', [
             'settings' => $settings,
+            'pages' => $pages,
         ]);
     }
 
@@ -27,7 +33,8 @@ class SettingController extends Controller
         foreach ($settings as $key => $value) {
             $setting = Setting::where('key', $key)->first();
 
-            if (!$setting) continue;
+            if (!$setting)
+                continue;
 
             // Handle image uploads
             if ($setting->type === 'image' && $request->hasFile("files.{$key}")) {

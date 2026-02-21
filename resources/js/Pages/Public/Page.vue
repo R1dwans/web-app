@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
+import BlockRenderer from '@/Components/PageBuilder/BlockRenderer.vue';
 import { Calendar, Newspaper, ArrowRight } from 'lucide-vue-next';
 import { Badge } from '@/Components/ui/badge';
 
@@ -8,6 +9,8 @@ const props = defineProps({
     page: Object,
     recentArticles: Array,
     recentEvents: Array,
+    dynamicData: { type: Object, default: () => ({}) },
+    isHomepage: { type: Boolean, default: false },
 });
 
 const formatDate = (dateString) => {
@@ -28,8 +31,8 @@ const getImageUrl = (path) => {
     <Head :title="page.meta_title || page.title" />
 
     <PublicLayout>
-        <!-- Page Header -->
-        <div class="bg-gray-50 dark:bg-zinc-900/50 border-b">
+        <!-- Page Header (hidden in builder mode) -->
+        <div v-if="page.editor_mode !== 'builder'" class="bg-gray-50 dark:bg-zinc-900/50 border-b">
             <div class="container mx-auto px-4 py-12 md:py-16">
                 <div class="max-w-4xl mx-auto text-center">
                     <h1 class="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900 dark:text-white">
@@ -39,7 +42,13 @@ const getImageUrl = (path) => {
             </div>
         </div>
 
-        <div class="py-12">
+        <!-- Builder Mode -->
+        <div v-if="page.editor_mode === 'builder' && page.blocks && page.blocks.length > 0">
+            <BlockRenderer :blocks="page.blocks" :dynamicData="dynamicData" />
+        </div>
+
+        <!-- Editor Mode -->
+        <div v-else class="py-12">
             <!-- DEFAULT: Content + Sidebar Right -->
             <div v-if="!page.layout || page.layout === 'default'" class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">

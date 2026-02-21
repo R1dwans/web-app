@@ -1,7 +1,7 @@
 <script setup>
 import { useForm, Head, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import { Settings, Globe, Phone, Share2, Save, Upload, Check } from 'lucide-vue-next';
+import { Settings, Globe, Phone, Share2, Save, Upload, Check, Home } from 'lucide-vue-next';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -10,12 +10,14 @@ import { Label } from '@/Components/ui/label';
 
 const props = defineProps({
     settings: Object,
+    pages: Array,
 });
 
 const activeTab = ref('general');
 
 const tabs = [
     { key: 'general', label: 'Umum', icon: Globe },
+    { key: 'homepage', label: 'Beranda', icon: Home },
     { key: 'contact', label: 'Kontak', icon: Phone },
     { key: 'social', label: 'Sosial Media', icon: Share2 },
 ];
@@ -127,7 +129,69 @@ const getPreviewUrl = (setting) => {
                 <form @submit.prevent="handleSubmit" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <template v-for="tab in tabs" :key="tab.key">
                         <div v-show="activeTab === tab.key" class="p-6 space-y-6">
-                            <template v-if="settings[tab.key]">
+                            <!-- Custom homepage settings UI -->
+                            <template v-if="tab.key === 'homepage'">
+                                <div class="space-y-6">
+                                    <div>
+                                        <h3 class="text-base font-semibold text-gray-900 mb-1">Tampilan Beranda</h3>
+                                        <p class="text-sm text-gray-500 mb-4">Tentukan apa yang ditampilkan di halaman utama situs Anda.</p>
+                                    </div>
+
+                                    <!-- Display Mode Selection -->
+                                    <div class="space-y-3">
+                                        <label class="flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                                            :class="formData['homepage_display'] === 'default' ? 'border-indigo-500 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300'"
+                                            @click="formData['homepage_display'] = 'default'"
+                                        >
+                                            <input type="radio" v-model="formData['homepage_display']" value="default" class="mt-0.5 text-indigo-600" />
+                                            <div>
+                                                <span class="font-medium text-gray-900">Beranda Default</span>
+                                                <p class="text-sm text-gray-500 mt-0.5">Tampilkan halaman selamat datang dengan slider, artikel terbaru, dan agenda.</p>
+                                            </div>
+                                        </label>
+
+                                        <label class="flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                                            :class="formData['homepage_display'] === 'page' ? 'border-indigo-500 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300'"
+                                            @click="formData['homepage_display'] = 'page'"
+                                        >
+                                            <input type="radio" v-model="formData['homepage_display']" value="page" class="mt-0.5 text-indigo-600" />
+                                            <div class="flex-1">
+                                                <span class="font-medium text-gray-900">Halaman Statis</span>
+                                                <p class="text-sm text-gray-500 mt-0.5">Gunakan salah satu halaman yang sudah dibuat (seperti WordPress).</p>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <!-- Page Selector (shown when 'page' mode) -->
+                                    <div v-if="formData['homepage_display'] === 'page'" class="ml-8 space-y-3">
+                                        <Label class="text-sm font-medium text-gray-700">Pilih Halaman</Label>
+                                        <select v-model="formData['homepage_page_id']" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-white">
+                                            <option value="">— Pilih halaman —</option>
+                                            <option v-for="page in pages" :key="page.id" :value="String(page.id)">
+                                                {{ page.title }} {{ page.editor_mode === 'builder' ? '(Page Builder)' : '' }}
+                                            </option>
+                                        </select>
+
+                                        <!-- Selected page info -->
+                                        <div v-if="formData['homepage_page_id'] && pages.find(p => String(p.id) === formData['homepage_page_id'])" class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                                            <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                                                <Check class="w-4 h-4 text-green-600" />
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-green-800">{{ pages.find(p => String(p.id) === formData['homepage_page_id'])?.title }}</p>
+                                                <p class="text-xs text-green-600">/{{ pages.find(p => String(p.id) === formData['homepage_page_id'])?.slug }}</p>
+                                            </div>
+                                        </div>
+
+                                        <p v-if="!pages || pages.length === 0" class="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                                            ⚠️ Belum ada halaman yang dipublikasikan. Buat halaman terlebih dahulu di menu Pages.
+                                        </p>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Generic settings rendering -->
+                            <template v-else-if="settings[tab.key]">
                                 <div v-for="setting in settings[tab.key]" :key="setting.key" class="space-y-2">
                                     <Label :for="setting.key" class="text-sm font-medium text-gray-700">
                                         {{ setting.label }}

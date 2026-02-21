@@ -91,8 +91,8 @@ const formatDate = (dateString) => {
         <!-- Fallback Hero -->
         <div v-else class="relative h-[400px] bg-indigo-900 flex items-center justify-center text-center px-4">
             <div>
-                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Selamat Datang di Fikes CMS</h1>
-                <p class="text-indigo-200 text-lg">Fakultas Ilmu Kesehatan - Universitas Pahlawan</p>
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Title</h1>
+                <p class="text-indigo-200 text-lg">Title Description</p>
             </div>
         </div>
 

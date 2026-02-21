@@ -10,6 +10,8 @@ class Page extends Model
         'title',
         'slug',
         'content',
+        'blocks',
+        'editor_mode',
         'is_published',
         'layout',
         'meta_title',
@@ -18,6 +20,7 @@ class Page extends Model
 
     protected $casts = [
         'is_published' => 'boolean',
+        'blocks' => 'array',
     ];
 
     public function menuItems()

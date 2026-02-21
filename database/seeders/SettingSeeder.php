@@ -25,6 +25,10 @@ class SettingSeeder extends Seeder
             ['key' => 'facebook_url', 'value' => '', 'type' => 'text', 'group' => 'social', 'label' => 'Facebook URL'],
             ['key' => 'instagram_url', 'value' => '', 'type' => 'text', 'group' => 'social', 'label' => 'Instagram URL'],
             ['key' => 'youtube_url', 'value' => '', 'type' => 'text', 'group' => 'social', 'label' => 'YouTube URL'],
+
+            // Homepage / Landing Page
+            ['key' => 'homepage_display', 'value' => 'default', 'type' => 'select', 'group' => 'homepage', 'label' => 'Tampilan Beranda'],
+            ['key' => 'homepage_page_id', 'value' => '', 'type' => 'select', 'group' => 'homepage', 'label' => 'Halaman Statis'],
         ];
 
         foreach ($settings as $setting) {

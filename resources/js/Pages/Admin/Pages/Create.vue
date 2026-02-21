@@ -6,6 +6,7 @@ import { Input } from '@/Components/ui/input'
 import { Label } from '@/Components/ui/label'
 import { Textarea } from '@/Components/ui/textarea'
 import TipTapEditor from '@/Components/TipTapEditor.vue'
+import PageBuilder from '@/Components/PageBuilder/PageBuilder.vue'
 import {
   Card,
   CardContent,
@@ -17,12 +18,14 @@ import {
 import InputError from '@/Components/InputError.vue';
 import { ref, watch } from 'vue';
 import { slugify } from '@/lib/utils';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft, PenLine, Blocks } from 'lucide-vue-next';
 
 const form = useForm({
     title: '',
     slug: '',
     content: '',
+    blocks: [],
+    editor_mode: 'editor',
     is_published: false,
     layout: 'default',
     meta_title: '',
@@ -118,11 +121,29 @@ const submit = (shouldPublish) => {
                                 <InputError :message="form.errors.slug" />
                             </div>
 
-                            <!-- Content Editor -->
+                            <!-- Mode Toggle -->
                             <div class="space-y-2">
+                                <Label>Mode Editor</Label>
+                                <div class="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-xl w-fit">
+                                    <button type="button" @click="form.editor_mode = 'editor'" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all" :class="form.editor_mode === 'editor' ? 'bg-white dark:bg-zinc-700 shadow-sm text-primary' : 'text-gray-500 hover:text-gray-700'">
+                                        <PenLine class="w-4 h-4" /> Rich Editor
+                                    </button>
+                                    <button type="button" @click="form.editor_mode = 'builder'" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all" :class="form.editor_mode === 'builder' ? 'bg-white dark:bg-zinc-700 shadow-sm text-primary' : 'text-gray-500 hover:text-gray-700'">
+                                        <Blocks class="w-4 h-4" /> Page Builder
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Content Editor (TipTap) -->
+                            <div v-if="form.editor_mode === 'editor'" class="space-y-2">
                                 <Label>Content</Label>
                                 <TipTapEditor v-model="form.content" />
                                 <InputError :message="form.errors.content" />
+                            </div>
+
+                            <!-- Page Builder -->
+                            <div v-else>
+                                <PageBuilder v-model="form.blocks" />
                             </div>
                         </CardContent>
                     </Card>

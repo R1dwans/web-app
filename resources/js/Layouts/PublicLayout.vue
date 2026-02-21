@@ -14,7 +14,7 @@ const footerMenuItems = computed(() => {
     return footerMenu.value?.root_items || footerMenu.value?.rootItems || [];
 });
 const s = computed(() => page.props.appSettings || {});
-const appName = computed(() => s.value.site_name || 'Fikes CMS');
+const appName = computed(() => s.value.site_name || ' ');
 const logoUrl = computed(() => s.value.logo ? `/storage/${s.value.logo}` : null);
 
 const isSearchOpen = ref(false);
@@ -42,7 +42,7 @@ const props = defineProps({
                 <div class="flex justify-between h-16 items-center">
                     <div class="flex items-center">
                         <Link :href="route('welcome')" class="flex items-center gap-2 font-bold text-2xl text-indigo-600">
-                            <img v-if="logoUrl" :src="logoUrl" class="h-8 w-auto" alt="Logo" />
+                            <img v-if="logoUrl" :src="logoUrl" class="h-12 w-auto" alt="Logo" />
                             {{ appName }}
                         </Link>
                     </div>
