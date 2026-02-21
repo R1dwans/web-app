@@ -76,8 +76,8 @@ const getImageUrl = (path) => {
             <!-- DEFAULT: Content Left + Sidebar Right -->
             <div v-if="!article.layout || article.layout === 'default'" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 <article class="lg:col-span-8">
-                    <div v-if="article.image" class="rounded-xl overflow-hidden mb-10 shadow-lg border">
-                        <img :src="getImageUrl(article.image)" :alt="article.title" class="w-full h-auto object-cover max-h-[500px]">
+                    <div v-if="article.image" class="rounded-xl overflow-hidden mb-10 shadow-lg border aspect-video">
+                        <img :src="getImageUrl(article.image)" :alt="article.title" class="w-full h-full object-cover">
                     </div>
                     <div class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-img:rounded-xl prose-a:text-primary" v-html="article.content"></div>
                 </article>
@@ -108,8 +108,8 @@ const getImageUrl = (path) => {
             <!-- FULL WIDTH -->
             <div v-else-if="article.layout === 'full'" class="max-w-none">
                 <article>
-                    <div v-if="article.image" class="rounded-xl overflow-hidden mb-10 shadow-lg border">
-                        <img :src="getImageUrl(article.image)" :alt="article.title" class="w-full h-auto object-cover max-h-[500px]">
+                    <div v-if="article.image" class="rounded-xl overflow-hidden mb-10 shadow-lg border aspect-video max-h-[480px]">
+                        <img :src="getImageUrl(article.image)" :alt="article.title" class="w-full h-full object-cover">
                     </div>
                     <div class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-img:rounded-xl prose-a:text-primary" v-html="article.content"></div>
                 </article>
