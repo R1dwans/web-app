@@ -65,7 +65,11 @@ class MenuItemController extends Controller
             $data['linkable_id']   = null;
         }
 
-        MenuItem::create($data);
+        $menuItem = MenuItem::create($data);
+
+        if ($request->wantsJson()) {
+            return response()->json($menuItem->load('children'));
+        }
 
         return Redirect::back()->with('success', 'Menu item added successfully.');
     }
@@ -98,15 +102,23 @@ class MenuItemController extends Controller
 
         $menuItem->update($data);
 
+        if ($request->wantsJson()) {
+            return response()->json($menuItem->load('children'));
+        }
+
         return Redirect::back()->with('success', 'Menu item updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(MenuItem $menuItem)
+    public function destroy(Request $request, MenuItem $menuItem)
     {
         $menuItem->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return Redirect::back()->with('success', 'Menu item deleted successfully.');
     }

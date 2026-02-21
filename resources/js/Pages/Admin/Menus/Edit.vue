@@ -112,23 +112,56 @@ const onLinkableSelect = (e) => {
     }
 };
 
-const submitItem = () => {
-    itemForm.post(route('menu-items.store'), {
-        onSuccess: () => resetItemForm(),
-    });
+const submitItem = async () => {
+    itemForm.clearErrors();
+    itemForm.processing = true;
+    
+    try {
+        const response = await axios.post(route('menu-items.store'), itemForm.data());
+        const newItem = response.data;
+        
+        // Add to local state
+        if (!newItem.parent_id) {
+            rootItems.value.push(newItem);
+        } else {
+            const parent = rootItems.value.find(i => i.id === newItem.parent_id);
+            if (parent) {
+                if (!parent.children) parent.children = [];
+                parent.children.push(newItem);
+                // Trigger reactivity for children
+                parent.children = [...parent.children];
+            }
+        }
+        
+        resetItemForm();
+    } catch (e) {
+        if (e.response?.data?.errors) {
+            Object.keys(e.response.data.errors).forEach(key => {
+                itemForm.setError(key, e.response.data.errors[key][0]);
+            });
+        }
+    } finally {
+        itemForm.processing = false;
+    }
 };
 
-// ─── Delete (Inertia router, handles redirects) ───────────────────
-const deleteItem = (id) => {
+// ─── Delete (Axios, handles local state) ─────────────────────────
+const deleteItem = async (id) => {
     if (!confirm('Hapus menu item ini?')) return;
 
-    router.delete(route('menu-items.destroy', id), {
-        onSuccess: () => {
-            // Re-build tree from updated props.menu.items
-            rootItems.value = buildTree(props.menu.items);
-        },
-        preserveScroll: true
-    });
+    try {
+        await axios.delete(route('menu-items.destroy', id));
+        // Remove from local state
+        rootItems.value = rootItems.value.filter(item => {
+            if (item.id === id) return false;
+            if (item.children) {
+                item.children = item.children.filter(c => c.id !== id);
+            }
+            return true;
+        });
+    } catch (e) {
+        console.error('Delete failed', e);
+    }
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────
