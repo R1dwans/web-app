@@ -37,34 +37,45 @@ const getImageUrl = (path) => {
 
     <PublicLayout>
         <!-- Article Header / Hero -->
-        <div class="bg-gray-50 dark:bg-zinc-900/50 border-b">
-            <div class="container mx-auto px-4 py-12 md:py-16">
-                <div class="max-w-4xl mx-auto">
+        <div class="relative overflow-hidden border-b bg-gray-50 dark:bg-zinc-900/50 min-h-[40vh] flex items-center">
+            <!-- Blurred Backdrop -->
+            <div v-if="article.image" class="absolute inset-0 z-0">
+                <img :src="getImageUrl(article.image)" class="w-full h-full object-cover blur-2xl opacity-30 dark:opacity-20 scale-110" alt="">
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
+            </div>
+
+            <div class="container mx-auto px-4 py-16 relative z-10">
+                <div class="max-w-4xl">
                     <!-- Breadcrumb / Back -->
-                    <div class="mb-6">
-                        <Link :href="route('public.articles.index')" class="text-sm text-muted-foreground hover:text-primary transition inline-flex items-center gap-1">
-                            <ArrowLeft class="w-4 h-4" /> Kembali ke Berita
+                    <div class="mb-8">
+                        <Link :href="route('public.articles.index')" class="text-sm font-medium text-muted-foreground hover:text-primary transition inline-flex items-center gap-2 group">
+                            <div class="p-1.5 rounded-full bg-background border group-hover:border-primary group-hover:text-primary transition">
+                                <ArrowLeft class="w-4 h-4" />
+                            </div>
+                            Kembali ke Berita
                         </Link>
                     </div>
 
                     <!-- Meta & Title -->
-                    <div class="space-y-4 mb-8">
-                        <div class="flex items-center gap-3">
-                            <Badge v-if="article.category">{{ article.category.name }}</Badge>
-                            <span class="text-sm text-muted-foreground flex items-center gap-1">
-                                <Calendar class="w-3 h-3" /> {{ formatDate(article.created_at) }}
+                    <div class="space-y-6">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <Badge v-if="article.category" class="px-3 py-1 text-xs">{{ article.category.name }}</Badge>
+                            <span class="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                                <Calendar class="w-4 h-4" /> {{ formatDate(article.created_at) }}
                             </span>
                         </div>
-                        <h1 class="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900 dark:text-white">
+                        
+                        <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-gray-900 dark:text-white drop-shadow-sm">
                             {{ article.title }}
                         </h1>
-                        <div class="flex items-center gap-3 pt-2">
-                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                <User class="w-5 h-5" />
+
+                        <div class="flex items-center gap-4 pt-4">
+                            <div class="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
+                                <User class="w-6 h-6" />
                             </div>
                             <div class="flex flex-col">
-                                <span class="text-sm font-medium">{{ article.user?.name || 'Admin' }}</span>
-                                <span class="text-xs text-muted-foreground">Penulis</span>
+                                <span class="text-base font-bold text-gray-900 dark:text-gray-100">{{ article.user?.name || 'Administrator' }}</span>
+                                <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Penulis</span>
                             </div>
                         </div>
                     </div>
@@ -76,9 +87,6 @@ const getImageUrl = (path) => {
             <!-- DEFAULT: Content Left + Sidebar Right -->
             <div v-if="!article.layout || article.layout === 'default'" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 <article class="lg:col-span-8">
-                    <div v-if="article.image" class="rounded-xl overflow-hidden mb-10 shadow-lg border aspect-video">
-                        <img :src="getImageUrl(article.image)" :alt="article.title" class="w-full h-full object-cover">
-                    </div>
                     <div class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-img:rounded-xl prose-a:text-primary" v-html="article.content"></div>
                 </article>
                 <aside class="lg:col-span-4 space-y-8">
@@ -108,9 +116,6 @@ const getImageUrl = (path) => {
             <!-- FULL WIDTH -->
             <div v-else-if="article.layout === 'full'" class="max-w-none">
                 <article>
-                    <div v-if="article.image" class="rounded-xl overflow-hidden mb-10 shadow-lg border aspect-video max-h-[480px]">
-                        <img :src="getImageUrl(article.image)" :alt="article.title" class="w-full h-full object-cover">
-                    </div>
                     <div class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-img:rounded-xl prose-a:text-primary" v-html="article.content"></div>
                 </article>
             </div>
