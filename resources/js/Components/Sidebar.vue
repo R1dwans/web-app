@@ -58,7 +58,7 @@ function hasRole(allowedRoles) {
                 </Link>
             </div>
 
-            <div class="flex-1 overflow-y-auto py-4">
+            <div class="flex-1 overflow-y-auto py-4 dark-scrollbar">
                 <nav class="space-y-1 px-3">
                     <template v-for="link in links" :key="link.name">
                         <Link
@@ -123,7 +123,7 @@ function hasRole(allowedRoles) {
                         <X class="h-6 w-6" />
                     </button>
                  </div>
-                 <div class="flex-1 overflow-y-auto py-4">
+                 <div class="flex-1 overflow-y-auto py-4 dark-scrollbar">
                     <nav class="space-y-1 px-3">
                         <template v-for="link in links" :key="link.name">
                             <Link

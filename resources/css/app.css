@@ -30,6 +30,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -59,11 +60,45 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.2);
+    border-radius: 20px;
+    transition: background 0.2s;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.4);
+  }
+
+  /* Specific for dark elements like Sidebar */
+  .dark-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -71,21 +106,32 @@
   .prose img {
     @apply max-w-full h-auto rounded-xl my-4 mx-auto;
   }
-  
+
   .prose img[data-alignment="left"] {
     @apply ml-0 mr-auto block;
   }
-  
+
   .prose img[data-alignment="center"] {
     @apply mx-auto block;
   }
-  
+
   .prose img[data-alignment="right"] {
     @apply ml-auto mr-0 block;
   }
 
-  .prose img[data-size="100%"] { width: 100%; }
-  .prose img[data-size="75%"] { width: 75%; }
-  .prose img[data-size="50%"] { width: 50%; }
-  .prose img[data-size="25%"] { width: 25%; }
+  .prose img[data-size="100%"] {
+    width: 100%;
+  }
+
+  .prose img[data-size="75%"] {
+    width: 75%;
+  }
+
+  .prose img[data-size="50%"] {
+    width: 50%;
+  }
+
+  .prose img[data-size="25%"] {
+    width: 25%;
+  }
 }
