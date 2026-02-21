@@ -66,3 +66,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .prose img {
+    @apply max-w-full h-auto rounded-xl my-4 mx-auto;
+  }
+  
+  .prose img[data-alignment="left"] {
+    @apply ml-0 mr-auto block;
+  }
+  
+  .prose img[data-alignment="center"] {
+    @apply mx-auto block;
+  }
+  
+  .prose img[data-alignment="right"] {
+    @apply ml-auto mr-0 block;
+  }
+
+  .prose img[data-size="100%"] { width: 100%; }
+  .prose img[data-size="75%"] { width: 75%; }
+  .prose img[data-size="50%"] { width: 50%; }
+  .prose img[data-size="25%"] { width: 25%; }
+}

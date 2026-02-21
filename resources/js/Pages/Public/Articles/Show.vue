@@ -117,16 +117,3 @@ const getImageUrl = (path) => {
         </div>
     </PublicLayout>
 </template>
-
-<style>
-/* Article content images - respect inline size and add nice defaults */
-.prose img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 0.75rem;
-    margin: 1rem 0;
-}
-.prose img[data-size] {
-    display: block;
-}
-</style>

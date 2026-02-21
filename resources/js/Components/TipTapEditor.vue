@@ -30,7 +30,7 @@ import {
 } from 'lucide-vue-next'
 import FileManagerModal from '@/Components/FileManagerModal.vue';
 
-// Custom Image extension with size support
+// Custom Image extension with size & alignment support
 const CustomImage = Image.extend({
     addAttributes() {
         return {
@@ -42,11 +42,18 @@ const CustomImage = Image.extend({
                     return { width: attributes.width };
                 },
             },
+            alignment: {
+                default: 'left',
+                renderHTML: attributes => {
+                    return { 'data-alignment': attributes.alignment };
+                },
+                parseHTML: element => element.getAttribute('data-alignment') || 'left',
+            },
             'data-size': {
                 default: null,
                 renderHTML: attributes => {
                     if (!attributes['data-size']) return {};
-                    return { 'data-size': attributes['data-size'], style: `width: ${attributes['data-size']}` };
+                    return { 'data-size': attributes['data-size'] };
                 },
             },
         };
@@ -86,6 +93,10 @@ const getImageSize = computed(() => {
 
 const setImageSize = (size) => {
     editor.value.chain().focus().updateAttributes('image', { 'data-size': size }).run();
+};
+
+const setImageAlignment = (alignment) => {
+    editor.value.chain().focus().updateAttributes('image', { alignment }).run();
 };
 
 const imageSizes = [
@@ -319,7 +330,7 @@ const colors = [
                 <ImageIcon class="w-4 h-4" />
             </Button>
 
-            <!-- Image Size Controls (visible when image selected) -->
+            <!-- Image Size & Alignment Controls (visible when image selected) -->
             <template v-if="isImageSelected">
                 <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
                 <div class="flex items-center gap-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-md px-1 py-0.5">
@@ -332,6 +343,27 @@ const colors = [
                         @click="setImageSize(s.value)"
                     >
                         {{ s.label }}
+                    </Button>
+                    
+                    <div class="w-px h-4 bg-indigo-200 dark:bg-indigo-800 mx-1"></div>
+                    
+                    <Button type="button" size="icon" variant="ghost" class="h-7 w-7" 
+                        @click="setImageAlignment('left')"
+                        :class="{ 'bg-indigo-200 dark:bg-indigo-800': editor.getAttributes('image').alignment === 'left' }"
+                    >
+                        <AlignLeft class="w-3.5 h-3.5" />
+                    </Button>
+                    <Button type="button" size="icon" variant="ghost" class="h-7 w-7" 
+                        @click="setImageAlignment('center')"
+                        :class="{ 'bg-indigo-200 dark:bg-indigo-800': editor.getAttributes('image').alignment === 'center' }"
+                    >
+                        <AlignCenter class="w-3.5 h-3.5" />
+                    </Button>
+                    <Button type="button" size="icon" variant="ghost" class="h-7 w-7" 
+                        @click="setImageAlignment('right')"
+                        :class="{ 'bg-indigo-200 dark:bg-indigo-800': editor.getAttributes('image').alignment === 'right' }"
+                    >
+                        <AlignRight class="w-3.5 h-3.5" />
                     </Button>
                 </div>
             </template>
@@ -426,6 +458,30 @@ const colors = [
 .ProseMirror img[data-size] {
     display: block;
     margin: 0.5rem 0;
+}
+.ProseMirror img[data-alignment="left"] {
+    margin-right: auto;
+    margin-left: 0;
+}
+.ProseMirror img[data-alignment="center"] {
+    margin-left: auto;
+    margin-right: auto;
+}
+.ProseMirror img[data-alignment="right"] {
+    margin-left: auto;
+    margin-right: 0;
+}
+.ProseMirror img[data-size="100%"] {
+    width: 100%;
+}
+.ProseMirror img[data-size="75%"] {
+    width: 75%;
+}
+.ProseMirror img[data-size="50%"] {
+    width: 50%;
+}
+.ProseMirror img[data-size="25%"] {
+    width: 25%;
 }
 .ProseMirror code {
     background: #f3f4f6;
