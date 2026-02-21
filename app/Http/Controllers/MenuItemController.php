@@ -83,11 +83,13 @@ class MenuItemController extends Controller
             'title'         => 'required|string|max:255',
             'url'           => 'nullable|string|max:255',
             'order'         => 'integer',
+            'parent_id'     => 'nullable|exists:menu_items,id',
+            'target'        => 'nullable|string|max:20',
             'linkable_type' => 'nullable|in:article,page,category,custom',
             'linkable_id'   => 'nullable|integer',
         ]);
 
-        $data = $request->only(['title', 'url', 'order', 'target', 'icon']);
+        $data = $request->only(['title', 'url', 'order', 'parent_id', 'target', 'icon']);
 
         $linkableType = $request->input('linkable_type');
         if ($linkableType && $linkableType !== 'custom') {

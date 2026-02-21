@@ -90,6 +90,45 @@ const itemForm = useForm({
     linkable_id:   null,
 });
 
+const isEditing = ref(false);
+const editingId = ref(null);
+
+const editItem = (item) => {
+    isEditing.value = true;
+    editingId.value = item.id;
+    
+    // Fill the form
+    itemForm.parent_id = item.parent_id;
+    itemForm.title = item.title;
+    itemForm.url = item.url;
+    itemForm.target = item.target || '_self';
+    itemForm.icon = item.icon || '';
+    itemForm.order = item.order;
+    
+    // Resolve link type from class name
+    if (!item.linkable_type) {
+        linkType.value = 'custom';
+        itemForm.linkable_type = 'custom';
+        itemForm.linkable_id = null;
+    } else {
+        const typeMap = {
+            'Article': 'article',
+            'Page': 'page',
+            'Category': 'category'
+        };
+        const type = Object.keys(typeMap).find(t => item.linkable_type.includes(t));
+        linkType.value = typeMap[type] || 'custom';
+        itemForm.linkable_type = linkType.value;
+        itemForm.linkable_id = item.linkable_id;
+    }
+};
+
+const cancelEdit = () => {
+    isEditing.value = false;
+    editingId.value = null;
+    resetItemForm();
+};
+
 const resetItemForm = () => {
     itemForm.reset('parent_id', 'title', 'url', 'order', 'target', 'icon', 'linkable_id');
     itemForm.linkable_type = 'custom';
@@ -117,23 +156,78 @@ const submitItem = async () => {
     itemForm.processing = true;
     
     try {
-        const response = await axios.post(route('menu-items.store'), itemForm.data());
-        const newItem = response.data;
-        
-        // Add to local state
-        if (!newItem.parent_id) {
-            rootItems.value.push(newItem);
-        } else {
-            const parent = rootItems.value.find(i => i.id === newItem.parent_id);
-            if (parent) {
-                if (!parent.children) parent.children = [];
-                parent.children.push(newItem);
-                // Trigger reactivity for children
-                parent.children = [...parent.children];
+        if (isEditing.value) {
+            const response = await axios.put(route('menu-items.update', editingId.value), itemForm.data());
+            const updatedItem = response.data;
+            
+            // Update local state - find and replace in the tree
+            let found = false;
+            
+            // Search in root items
+            const rootIndex = rootItems.value.findIndex(i => i.id === updatedItem.id);
+            if (rootIndex !== -1) {
+                // If it was a root item but now has a parent (moved via form)
+                if (updatedItem.parent_id) {
+                    rootItems.value.splice(rootIndex, 1);
+                    const parent = rootItems.value.find(p => p.id === updatedItem.parent_id);
+                    if (parent) {
+                        if (!parent.children) parent.children = [];
+                        parent.children.push(updatedItem);
+                    }
+                } else {
+                    // Update root item
+                    rootItems.value[rootIndex] = { ...updatedItem, children: rootItems.value[rootIndex].children };
+                }
+                found = true;
             }
+            
+            // Search in children if not found or if it was a child
+            if (!found) {
+                rootItems.value.forEach(p => {
+                    if (p.children) {
+                        const childIndex = p.children.findIndex(c => c.id === updatedItem.id);
+                        if (childIndex !== -1) {
+                            // If it was a child but now has a different parent or no parent
+                            if (updatedItem.parent_id !== p.id) {
+                                p.children.splice(childIndex, 1);
+                                if (!updatedItem.parent_id) {
+                                    rootItems.value.push(updatedItem);
+                                } else {
+                                    const newParent = rootItems.value.find(np => np.id === updatedItem.parent_id);
+                                    if (newParent) {
+                                        if (!newParent.children) newParent.children = [];
+                                        newParent.children.push(updatedItem);
+                                    }
+                                }
+                            } else {
+                                // Update child in place
+                                p.children[childIndex] = updatedItem;
+                            }
+                            found = true;
+                        }
+                    }
+                });
+            }
+            
+            cancelEdit();
+        } else {
+            const response = await axios.post(route('menu-items.store'), itemForm.data());
+            const newItem = response.data;
+            
+            // Add to local state
+            if (!newItem.parent_id) {
+                rootItems.value.push(newItem);
+            } else {
+                const parent = rootItems.value.find(i => i.id === newItem.parent_id);
+                if (parent) {
+                    if (!parent.children) parent.children = [];
+                    parent.children.push(newItem);
+                    // Trigger reactivity for children
+                    parent.children = [...parent.children];
+                }
+            }
+            resetItemForm();
         }
-        
-        resetItemForm();
     } catch (e) {
         if (e.response?.data?.errors) {
             Object.keys(e.response.data.errors).forEach(key => {
@@ -231,7 +325,10 @@ const linkTypeBadgeClass = (item) => {
                         <!-- Add Item -->
                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div class="p-6 text-gray-900">
-                                <h3 class="text-lg font-medium mb-4">Tambah Item</h3>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-medium">{{ isEditing ? 'Edit Item' : 'Tambah Item' }}</h3>
+                                    <Button v-if="isEditing" type="button" variant="ghost" size="sm" @click="cancelEdit" class="text-gray-400 hover:text-gray-600">Batal</Button>
+                                </div>
                                 <form @submit.prevent="submitItem" class="space-y-4">
                                     <div>
                                         <Label>Parent (Opsional)</Label>
@@ -300,7 +397,9 @@ const linkTypeBadgeClass = (item) => {
                                             <Input id="item_order" type="number" v-model="itemForm.order" />
                                         </div>
                                     </div>
-                                    <Button :disabled="itemForm.processing" variant="secondary" class="w-full">Tambah ke Menu</Button>
+                                    <Button :disabled="itemForm.processing" :variant="isEditing ? 'default' : 'secondary'" class="w-full">
+                                        {{ isEditing ? 'Simpan Perubahan' : 'Tambah ke Menu' }}
+                                    </Button>
                                 </form>
                             </div>
                         </div>
@@ -348,6 +447,7 @@ const linkTypeBadgeClass = (item) => {
                                                 </div>
                                                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                                                     <a v-if="item.url" :href="item.url" target="_blank" class="p-1.5 text-gray-400 hover:text-blue-600 rounded"><ExternalLink class="w-3.5 h-3.5" /></a>
+                                                    <button type="button" @click="editItem(item)" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded"><Plus class="w-3.5 h-3.5 rotate-45" /></button>
                                                     <button type="button" @click="deleteItem(item.id)" class="p-1.5 text-gray-400 hover:text-red-600 rounded"><Trash2 class="w-3.5 h-3.5" /></button>
                                                 </div>
                                             </div>
@@ -379,7 +479,10 @@ const linkTypeBadgeClass = (item) => {
                                                                 </div>
                                                                 <p class="text-xs text-gray-400 truncate">{{ child.url || '—' }}</p>
                                                             </div>
-                                                            <button type="button" @click="deleteItem(child.id)" class="p-1 text-gray-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"><Trash2 class="w-3.5 h-3.5" /></button>
+                                                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                                                                <button type="button" @click="editItem(child)" class="p-1 text-gray-300 hover:text-indigo-600 transition"><Plus class="w-3.5 h-3.5 rotate-45" /></button>
+                                                                <button type="button" @click="deleteItem(child.id)" class="p-1 text-gray-300 hover:text-red-600 transition"><Trash2 class="w-3.5 h-3.5" /></button>
+                                                            </div>
                                                         </div>
                                                     </template>
                                                 </draggable>
