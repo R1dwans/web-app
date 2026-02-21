@@ -5,7 +5,11 @@ import { Search as SearchIcon, X } from 'lucide-vue-next';
 
 const page = usePage();
 const menu = computed(() => page.props.menus?.primary);
-const menuItems = computed(() => menu.value?.root_items?.filter(item => item.url !== '/') || []);
+const menuItems = computed(() => {
+    // Handle both snake_case and camelCase for root_items/rootItems
+    const items = menu.value?.root_items || menu.value?.rootItems || [];
+    return items.filter(item => item.url !== '/');
+});
 const s = computed(() => page.props.appSettings || {});
 const appName = computed(() => s.value.site_name || 'Fikes CMS');
 const logoUrl = computed(() => s.value.logo ? `/storage/${s.value.logo}` : null);

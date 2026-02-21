@@ -39,9 +39,13 @@ const submit = () => {
                             </div>
 
                             <div>
-                                <Label for="location">Location (Optional)</Label>
-                                <Input id="location" type="text" v-model="form.location" placeholder="e.g. primary, footer" />
-                                <p class="text-sm text-gray-500">Unique identifier for rendering this menu in specific theme locations.</p>
+                                <Label for="location">Location</Label>
+                                <select id="location" v-model="form.location" class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">-- No Location / Custom --</option>
+                                    <option value="primary">Primary Navigation (Header)</option>
+                                    <option value="footer">Footer Menu</option>
+                                </select>
+                                <p class="text-xs text-muted-foreground mt-1">Select where this menu should appear. "Primary" is used for the main header navigation.</p>
                                 <InputError class="mt-2" :message="form.errors.location" />
                             </div>
 

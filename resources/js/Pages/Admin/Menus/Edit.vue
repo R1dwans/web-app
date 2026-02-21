@@ -210,8 +210,13 @@ const linkTypeBadgeClass = (item) => {
                                         <InputError class="mt-2" :message="menuForm.errors.name" />
                                     </div>
                                     <div>
-                                        <Label for="location">Lokasi</Label>
-                                        <Input id="location" type="text" v-model="menuForm.location" />
+                                        <Label for="location">Lokasi Menu</Label>
+                                        <select id="location" v-model="menuForm.location" class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                            <option value="">-- Tanpa Lokasi / Custom --</option>
+                                            <option value="primary">Primary Navigation (Header)</option>
+                                            <option value="footer">Footer Menu</option>
+                                        </select>
+                                        <p class="text-[10px] text-gray-500 mt-1 italic">Tentukan koordinat tampilnya menu ini di website.</p>
                                         <InputError class="mt-2" :message="menuForm.errors.location" />
                                     </div>
                                     <div class="flex items-center space-x-2">
