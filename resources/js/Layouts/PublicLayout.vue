@@ -7,8 +7,11 @@ const page = usePage();
 const menu = computed(() => page.props.menus?.primary);
 const menuItems = computed(() => {
     // Handle both snake_case and camelCase for root_items/rootItems
-    const items = menu.value?.root_items || menu.value?.rootItems || [];
-    return items.filter(item => item.url !== '/');
+    return menu.value?.root_items || menu.value?.rootItems || [];
+});
+const footerMenu = computed(() => page.props.menus?.footer);
+const footerMenuItems = computed(() => {
+    return footerMenu.value?.root_items || footerMenu.value?.rootItems || [];
 });
 const s = computed(() => page.props.appSettings || {});
 const appName = computed(() => s.value.site_name || 'Fikes CMS');
@@ -46,47 +49,35 @@ const props = defineProps({
                     
                     <!-- Dynamic Menu -->
                     <div class="hidden md:flex space-x-8">
-                        <Link :href="route('welcome')" class="text-gray-700 hover:text-indigo-600 transition" :class="{ 'font-bold text-indigo-600': route().current('welcome') }">
-                            Beranda
-                        </Link>
-
-                        <template v-if="menu && menuItems.length > 0">
-                            <template v-for="item in menuItems" :key="item.id">
-                                <!-- Dropdown for items with children -->
-                                <div v-if="item.children && item.children.length > 0" class="relative group">
-                                    <button class="flex items-center text-gray-700 hover:text-indigo-600 transition">
-                                        {{ item.title }}
-                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                    </button>
-                                    <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                        <Link 
-                                            v-for="child in item.children" 
-                                            :key="child.id" 
-                                            :href="child.url || '#'" 
-                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        >
-                                            {{ child.title }}
-                                        </Link>
-                                    </div>
-                                </div>
-
-                                <!-- Standard Link -->
-                                <Link 
-                                    v-else 
-                                    :href="item.url || '#'" 
-                                    class="text-gray-700 hover:text-indigo-600 transition"
-                                >
+                        <template v-for="item in menuItems" :key="item.id">
+                            <!-- Dropdown for items with children -->
+                            <div v-if="item.children && item.children.length > 0" class="relative group">
+                                <button class="flex items-center text-gray-700 hover:text-indigo-600 transition" :class="{ 'font-bold text-indigo-600': $page.url === item.url }">
                                     {{ item.title }}
-                                </Link>
-                            </template>
-                        </template>
+                                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <Link 
+                                        v-for="child in item.children" 
+                                        :key="child.id" 
+                                        :href="child.url || '#'" 
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        :class="{ 'bg-gray-50 text-indigo-600 font-medium': $page.url === child.url }"
+                                    >
+                                        {{ child.title }}
+                                    </Link>
+                                </div>
+                            </div>
 
-                        <!-- Fallback Static Menu if no dynamic menu -->
-                        <template v-else>
-                            <Link :href="route('public.program-studies.index')" class="text-gray-700 hover:text-indigo-600 transition">Prodi</Link>
-                            <Link :href="route('public.events.index')" class="text-gray-700 hover:text-indigo-600 transition">Agenda</Link>
-                            <Link :href="route('public.facilities.index')" class="text-gray-700 hover:text-indigo-600 transition">Fasilitas</Link>
-                            <Link :href="route('public.documents.index')" class="text-gray-700 hover:text-indigo-600 transition">Download</Link>
+                            <!-- Standard Link -->
+                            <Link 
+                                v-else 
+                                :href="item.url || '#'" 
+                                class="text-gray-700 hover:text-indigo-600 transition"
+                                :class="{ 'font-bold text-indigo-600': $page.url === item.url }"
+                            >
+                                {{ item.title }}
+                            </Link>
                         </template>
                     </div>
 
@@ -138,11 +129,12 @@ const props = defineProps({
                 </div>
                 <div>
                     <h4 class="font-bold mb-4">Tautan Cepat</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
-                        <li><Link :href="route('welcome')" class="hover:text-white">Beranda</Link></li>
-                        <li><Link :href="route('public.program-studies.index')" class="hover:text-white">Program Studi</Link></li>
-                        <li><Link :href="route('public.events.index')" class="hover:text-white">Agenda</Link></li>
+                    <ul v-if="footerMenuItems.length > 0" class="space-y-2 text-sm text-gray-400">
+                        <li v-for="item in footerMenuItems" :key="item.id">
+                            <Link :href="item.url || '#'" class="hover:text-white">{{ item.title }}</Link>
+                        </li>
                     </ul>
+                    <p v-else class="text-xs text-gray-500 italic">Menu footer belum dikonfigurasi.</p>
                 </div>
                 <div>
                     <h4 class="font-bold mb-4">Kontak</h4>

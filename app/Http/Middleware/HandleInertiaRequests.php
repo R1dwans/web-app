@@ -45,6 +45,10 @@ class HandleInertiaRequests extends Middleware
                     ->where('is_active', true)
                     ->with('rootItems')
                     ->first(),
+                'footer' => \App\Models\Menu::where('location', 'footer')
+                    ->where('is_active', true)
+                    ->with('rootItems')
+                    ->first(),
             ],
             'appSettings' => \App\Models\Setting::allAsArray(),
         ];
