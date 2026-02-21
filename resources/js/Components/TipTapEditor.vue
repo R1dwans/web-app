@@ -16,7 +16,7 @@ import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
-import { watch, ref } from 'vue'
+import { watch, ref, computed } from 'vue'
 import { Button } from '@/Components/ui/button'
 import {
     Bold, Italic, Underline as UnderlineIcon, Strikethrough,
@@ -29,6 +29,29 @@ import {
     TableProperties, Rows3, Columns3, Trash2
 } from 'lucide-vue-next'
 import FileManagerModal from '@/Components/FileManagerModal.vue';
+
+// Custom Image extension with size support
+const CustomImage = Image.extend({
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            width: {
+                default: null,
+                renderHTML: attributes => {
+                    if (!attributes.width) return {};
+                    return { width: attributes.width };
+                },
+            },
+            'data-size': {
+                default: null,
+                renderHTML: attributes => {
+                    if (!attributes['data-size']) return {};
+                    return { 'data-size': attributes['data-size'], style: `width: ${attributes['data-size']}` };
+                },
+            },
+        };
+    },
+});
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
@@ -49,9 +72,28 @@ const openFileManager = () => { showFileManager.value = true; };
 
 const handleImageSelect = (url) => {
     if (url) {
-        editor.value.chain().focus().setImage({ src: url }).run();
+        editor.value.chain().focus().setImage({ src: url, 'data-size': '75%' }).run();
     }
 };
+
+// Image is selected?
+const isImageSelected = computed(() => editor.value?.isActive('image'));
+const getImageSize = computed(() => {
+    if (!editor.value?.isActive('image')) return null;
+    const attrs = editor.value.getAttributes('image');
+    return attrs['data-size'] || '100%';
+});
+
+const setImageSize = (size) => {
+    editor.value.chain().focus().updateAttributes('image', { 'data-size': size }).run();
+};
+
+const imageSizes = [
+    { label: 'Kecil', value: '25%' },
+    { label: 'Sedang', value: '50%' },
+    { label: 'Besar', value: '75%' },
+    { label: 'Penuh', value: '100%' },
+];
 
 const setLink = () => {
     const url = window.prompt('URL:');
@@ -80,7 +122,7 @@ const editor = useEditor({
             codeBlock: { HTMLAttributes: { class: 'bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-sm' } },
         }),
         Link.configure({ openOnClick: false }),
-        Image.configure({ inline: true, allowBase64: true }),
+        CustomImage.configure({ inline: false, allowBase64: true }),
         Youtube.configure({ controls: true }),
         Underline,
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -277,6 +319,23 @@ const colors = [
                 <ImageIcon class="w-4 h-4" />
             </Button>
 
+            <!-- Image Size Controls (visible when image selected) -->
+            <template v-if="isImageSelected">
+                <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                <div class="flex items-center gap-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-md px-1 py-0.5">
+                    <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium px-1">Ukuran:</span>
+                    <Button
+                        v-for="s in imageSizes" :key="s.value"
+                        type="button" size="sm" variant="ghost"
+                        class="h-7 text-xs px-2"
+                        :class="{ 'bg-indigo-200 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200': getImageSize === s.value }"
+                        @click="setImageSize(s.value)"
+                    >
+                        {{ s.label }}
+                    </Button>
+                </div>
+            </template>
+
             <!-- Table -->
             <div class="relative">
                 <Button type="button" size="icon" variant="ghost" class="h-8 w-8"
@@ -356,6 +415,17 @@ const colors = [
     max-width: 100%;
     height: auto;
     border-radius: 0.5rem;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+.ProseMirror img.ProseMirror-selectednode {
+    outline: 3px solid #6366f1;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}
+.ProseMirror img[data-size] {
+    display: block;
+    margin: 0.5rem 0;
 }
 .ProseMirror code {
     background: #f3f4f6;
