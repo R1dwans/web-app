@@ -14,6 +14,7 @@ const props = defineProps({
     menu: Object,
     articles: Array,
     pages: Array,
+    categories: Array,
 });
 
 // ─── Menu Settings Form ───────────────────────────────────────────
@@ -105,9 +106,9 @@ const onLinkableSelect = (e) => {
     const val = e.target.value;
     itemForm.linkable_id = val ? parseInt(val) : null;
     if (!itemForm.title) {
-        const list = linkType.value === 'article' ? props.articles : props.pages;
+        const list = linkType.value === 'article' ? props.articles : linkType.value === 'category' ? props.categories : props.pages;
         const item = list?.find(i => i.id === parseInt(val));
-        if (item) itemForm.title = item.title;
+        if (item) itemForm.title = item.title || item.name;
     }
 };
 
@@ -141,6 +142,7 @@ const linkTypeLabel = (item) => {
     if (!item.linkable_type) return 'Custom';
     if (item.linkable_type.includes('Article')) return 'Artikel';
     if (item.linkable_type.includes('Page'))    return 'Halaman';
+    if (item.linkable_type.includes('Category')) return 'Kategori';
     return 'Custom';
 };
 
@@ -148,6 +150,7 @@ const linkTypeBadgeClass = (item) => {
     if (!item.linkable_type) return 'bg-gray-100 text-gray-600';
     if (item.linkable_type.includes('Article')) return 'bg-blue-100 text-blue-700';
     if (item.linkable_type.includes('Page'))    return 'bg-purple-100 text-purple-700';
+    if (item.linkable_type.includes('Category')) return 'bg-green-100 text-green-700';
     return 'bg-gray-100 text-gray-600';
 };
 </script>
@@ -211,6 +214,7 @@ const linkTypeBadgeClass = (item) => {
                                             <option value="custom">Custom URL</option>
                                             <option value="article">Artikel</option>
                                             <option value="page">Halaman</option>
+                                            <option value="category">Kategori</option>
                                         </select>
                                     </div>
                                     <div v-if="linkType === 'article'">
@@ -226,6 +230,14 @@ const linkTypeBadgeClass = (item) => {
                                         <select @change="onLinkableSelect" class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                             <option value="">-- Pilih Halaman --</option>
                                             <option v-for="page in pages" :key="page.id" :value="page.id">{{ page.title }}</option>
+                                        </select>
+                                        <InputError class="mt-2" :message="itemForm.errors.linkable_id" />
+                                    </div>
+                                    <div v-if="linkType === 'category'">
+                                        <Label>Pilih Kategori</Label>
+                                        <select @change="onLinkableSelect" class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                            <option value="">-- Pilih Kategori --</option>
+                                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                                         </select>
                                         <InputError class="mt-2" :message="itemForm.errors.linkable_id" />
                                     </div>

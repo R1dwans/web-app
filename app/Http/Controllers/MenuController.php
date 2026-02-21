@@ -6,6 +6,7 @@ use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Article;
 use App\Models\Page;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Redirect;
@@ -75,6 +76,9 @@ class MenuController extends Controller
             'pages' => Page::where('is_published', true)
                 ->select('id', 'title', 'slug')
                 ->orderBy('title')
+                ->get(),
+            'categories' => Category::select('id', 'name', 'slug')
+                ->orderBy('name')
                 ->get(),
         ]);
     }

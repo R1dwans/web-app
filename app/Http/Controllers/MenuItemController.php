@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MenuItem;
 use App\Models\Article;
 use App\Models\Page;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 
@@ -16,9 +17,10 @@ class MenuItemController extends Controller
     private function resolveUrl(string $type, int $id): string
     {
         return match ($type) {
-            'article' => route('public.articles.show', Article::findOrFail($id)->slug),
-            'page'    => route('public.pages.show', Page::findOrFail($id)->slug),
-            default   => '',
+            'article'  => route('public.articles.show', Article::findOrFail($id)->slug),
+            'page'     => route('public.pages.show', Page::findOrFail($id)->slug),
+            'category' => route('public.articles.index') . '?category=' . Category::findOrFail($id)->slug,
+            default    => '',
         };
     }
 
@@ -28,9 +30,10 @@ class MenuItemController extends Controller
     private function resolveClass(string $type): string
     {
         return match ($type) {
-            'article' => Article::class,
-            'page'    => Page::class,
-            default   => '',
+            'article'  => Article::class,
+            'page'     => Page::class,
+            'category' => Category::class,
+            default    => '',
         };
     }
 
@@ -45,7 +48,7 @@ class MenuItemController extends Controller
             'url'           => 'nullable|string|max:255',
             'parent_id'     => 'nullable|exists:menu_items,id',
             'order'         => 'integer',
-            'linkable_type' => 'nullable|in:article,page,custom',
+            'linkable_type' => 'nullable|in:article,page,category,custom',
             'linkable_id'   => 'nullable|integer',
         ]);
 
@@ -76,7 +79,7 @@ class MenuItemController extends Controller
             'title'         => 'required|string|max:255',
             'url'           => 'nullable|string|max:255',
             'order'         => 'integer',
-            'linkable_type' => 'nullable|in:article,page,custom',
+            'linkable_type' => 'nullable|in:article,page,category,custom',
             'linkable_id'   => 'nullable|integer',
         ]);
 
